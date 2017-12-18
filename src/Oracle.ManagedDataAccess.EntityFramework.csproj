@@ -47,7 +47,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mock\ODTSettings.cs" />
     <Compile Include="System\Data\Common\Utils\EF6MetadataHelpers.cs" />
     <Compile Include="EFOracleDdlBuilder.cs" />
     <Compile Include="MetadataHelper.cs" />
