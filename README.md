@@ -1,2 +1,2 @@
 
-# Oracle.ManagedDataAccess.EntityFramework for .Net Framework 4.0.
+# Oracle.ManagedDataAccess.EntityFramework for .Net Framework 4.0
