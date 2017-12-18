@@ -1,0 +1,11 @@
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Debug\Oracle.ManagedDataAccess.EntityFramework.Properties.Resources.resources
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Debug\Oracle.ManagedDataAccess.EntityFramework.csproj.GenerateResource.Cache
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Debug\Oracle.ManagedDataAccess.EntityFramework.csproj.CoreCompileInputs.cache
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\Oracle.ManagedDataAccess.EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\Oracle.ManagedDataAccess.EntityFramework.pdb
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Debug\Oracle.ManagedDataAccess.EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Debug\Oracle.ManagedDataAccess.EntityFramework.pdb
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\EntityFramework.xml
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\zh-Hans\EntityFramework.resources.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Debug\Oracle.ManagedDataAccess_3.dll

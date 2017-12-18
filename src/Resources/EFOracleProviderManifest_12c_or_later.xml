@@ -1,0 +1,1129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+####################################################################################################################
+
+BE AWARE THAT THE ORDER IN WHICH TYPES ARE DESCRIBED IN THE PROVIDER MANIFEST IS RELEVANT AND HAVE IMPACT IN LOOKUP
+PROCESS
+
+#################################################################################################################### 
+-->
+<ProviderManifest Namespace="OracleEFProvider" xmlns="http://schemas.microsoft.com/ado/2006/04/edm/providermanifest">
+  <Types>
+
+    <!--
+    ############################################################################
+    # Some SQL ANSI types (supported in DDL)
+    ############################################################################
+    -->
+    
+    <Type Name="smallint" PrimitiveTypeKind="Int16">
+    </Type>
+    <Type Name="int" PrimitiveTypeKind="Int32">
+    </Type>
+    <!-- shsu
+    <Type Name="ref cursor" PrimitiveTypeKind="SByte">
+    </Type> -->
+    <!-- shsu -->
+    <!--
+    <Type Name="ref cursor" PrimitiveTypeKind="Binary">
+      <FacetDescriptions>
+        <MaxLength DefaultValue="12345" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    -->
+    <!--
+    ############################################################################
+    # Oracle built-in types
+    ############################################################################
+    -->
+    <!-- shsu: changed Precision DefaultValue to 38 from 18 -->
+    <Type Name="number" PrimitiveTypeKind="Decimal">
+      <FacetDescriptions>
+        <Precision Minimum="1" Maximum="38" Constant="false" DefaultValue="38" />
+        <Scale Minimum="0" Maximum="38" Constant="false" DefaultValue="0" />
+      </FacetDescriptions>
+    </Type>
+    <Type Name="nvarchar2" PrimitiveTypeKind="String">
+      <FacetDescriptions>
+        <!-- shsu: in ssdl file, we are displaying char_length for char, nchar, 
+        varchar2, nvarchar2, which means the MaxLength is in characters; other types
+        are displaying data_length, which is in bytes. 2000 is the maximum length
+        in characters for nvarchar2 because char symantics is the default.
+        12c NVARCHAR2 can be up to 32767 (32K) bytes. To fix bug 12578989, 
+        leave it as byte maximum 32K.
+        -->
+        <MaxLength Minimum="1" Maximum="32767" DefaultValue="32767" Constant="false" />
+        <Unicode DefaultValue="true" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+        <!-- shsu: in ssdl file, we are displaying char_length for char, nchar, 
+        varchar2, nvarchar2, which means the MaxLength is in characters; other types
+        are displaying data_length, which is in bytes. 4000 is the maximum length
+        for nvarchar2 where one bye is one character and byte symantics is the default.
+        12c VARCHAR2 can be up to 32767 (32K) bytes.
+        -->
+    <Type Name="varchar2" PrimitiveTypeKind="String">
+      <FacetDescriptions>
+        <MaxLength Minimum="1" Maximum="32767" DefaultValue="32767" Constant="false" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!--shsu:ALL_TAB_COLUMNS data_length is 4000 in bytes for BLOB.-->
+    <Type Name="nclob" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <!-- shsu: as per David Sceppa at Microsoft, .NET String maximum length
+             is 2147483647 and 1073741823 is the maximum Unicode characters. But
+             Oracle 11g NCLOB maximum size is 128 terabytes. Earlier versions
+             Oracle NCLOB is 4 gigabytes. Faisal at Microsoft said it should be 
+             2147483647. OracleClient sample is listing 1073741823 for nclob.
+        -->
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <Unicode DefaultValue="true" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!--shsu:ALL_TAB_COLUMNS data_length is 4000 in bytes for CLOB.-->
+    <Type Name="clob" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!--shsu:ALL_TAB_COLUMNS data_length is 4000 in bytes for BLOB.-->
+    <Type Name="blob" PrimitiveTypeKind="Binary" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: 12c RAW can be up to 32767 (32K) bytes -->
+    <Type Name="raw" PrimitiveTypeKind="Binary" >
+      <FacetDescriptions>
+        <MaxLength Minimum="1" Maximum="32767" DefaultValue="32767" Constant="false" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <Type Name="long raw" PrimitiveTypeKind="Binary" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <Type Name="guid raw" PrimitiveTypeKind="Guid" >
+      <FacetDescriptions>
+        <MaxLength Minimum="16" Maximum="16" DefaultValue="16" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <Type Name="date" PrimitiveTypeKind="DateTime">
+      <FacetDescriptions>
+        <Precision DefaultValue="0" Constant="true" />
+        <!--<Scale DefaultValue="0" Constant="true"  />-->
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: as per Faisal Mohamood at Microsoft, map to DateTime with default precision
+         6 for timestamp in GetEdmType(). OracleClient sample maps this to DateTimeOffset.
+    -->
+    <Type Name="timestamp" PrimitiveTypeKind="DateTime">
+      <FacetDescriptions>
+        <Precision Minimum="0" Maximum="9" DefaultValue="6" Constant="false" />
+        <!--<Scale DefaultValue="1" Constant="true"  />-->
+      </FacetDescriptions>
+    </Type>
+    <Type Name="nchar" PrimitiveTypeKind="String">
+      <FacetDescriptions>
+        <!-- shsu: in ssdl file, we are displaying char_length for char, nchar, 
+        varchar2, nvarchar2, which means the MaxLength is in characters; other types
+        are displaying data_length, which is in bytes. 1000 is the maximum length
+        in characters for nchar because char symantics is the default.
+        To fix bug 12578989, leave it as byte maximum 2000.
+        -->
+        <MaxLength Minimum="1" Maximum="2000" DefaultValue="2000" Constant="false" />
+        <Unicode DefaultValue="true" Constant="true" />
+        <FixedLength DefaultValue="true" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <Type Name="binary_double" PrimitiveTypeKind="Double">
+    </Type>
+    <Type Name="binary_float" PrimitiveTypeKind="Single">
+    </Type>
+    <Type Name="guid" PrimitiveTypeKind="Guid">
+    </Type>
+    <!-- shsu: added timestamp with time zone -->
+    <!-- shsu: as per Faisal Mohamood at Microsoft, map to DateTimeOffset with default precision 
+         254 for TimestampTZ in GetEdmType(). OracleClient sample does not support TimestampTZ.
+    -->
+    <Type Name="timestamp with time zone" PrimitiveTypeKind="DateTimeOffset">
+      <FacetDescriptions>
+        <Precision Minimum="0" Maximum="9" DefaultValue="6" Constant="false" />
+        <!--<Scale DefaultValue="2" Constant="true"  />-->
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added timestamp with local time zone -->
+    <!-- shsu: map to DateTime with precision 255 for TimestampLTZ in GetEdmType().
+         OracleClient sample does not support TimestampLTZ.
+    -->
+    <Type Name="timestamp with local time zone" PrimitiveTypeKind="DateTime">
+      <FacetDescriptions>
+        <Precision Minimum="0" Maximum="255" DefaultValue="6" Constant="false" />
+        <!--<Scale DefaultValue="3" Constant="true"  />-->
+      </FacetDescriptions>
+    </Type>    
+    <!-- shsu: added long 
+         MaxLength is in bytes. ALL_TAB_COLUMNS data_length is 0 in bytes for LONG. -->
+    <Type Name="long" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+        <!-- shsu: added char. In ssdl file, we are displaying char_length for char, nchar, 
+        varchar2, nvarchar2, which means the MaxLength is in characters; other types
+        are displaying data_length, which is in bytes. 2000 is the maximum length
+        for char where one bye is one character and byte symantics is the default.
+        -->
+    <Type Name="char" PrimitiveTypeKind="String">
+      <FacetDescriptions>
+        <MaxLength Minimum="1" Maximum="2000" DefaultValue="2000" Constant="false" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="true" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+        <!-- shsu: added interval year to month
+         It represents the total number of months. Mapping to Int64 is
+         consistent to OracleDataReader.
+         <Type Name="interval year to month" PrimitiveTypeKind="Int64">
+         But,
+         As per Faisal Mohamood at Microsoft, map to Edm.Decimal(250, 0).
+         -->
+    <Type Name="interval year to month" PrimitiveTypeKind="Decimal">
+      <FacetDescriptions>
+        <Precision Minimum="1" Maximum="250" Constant="false" DefaultValue="250" />
+        <Scale Minimum="0" Maximum="9" Constant="false" DefaultValue="0" />
+        </FacetDescriptions>
+    </Type>
+         <!-- shsu: added interval day to second
+         In USER_TAB_COLUMNS table, data_precision is for:
+         1. the "year" of IntervalYM; or
+         2. the "day" of IntervalDS. 
+         Data_scale is for:
+         1. the "month" of IntervalYM; or
+         2. the precision of "second" in IntervalDS; or
+         3. the precision of "second" in Timestamp, TimestampTZ, TimestampLTZ
+         
+         If precision is <= scale, EDM Wizard throws an error. This has been fixed in SSDL
+         by checking the data_precision and data_scale for STableColumns.
+         
+         Because EDM simple types do not have TimeSpan type, if let it represent the total 
+         number of seconds and fractional seconds then the following is true.
+    <Type Name="interval day to second" PrimitiveTypeKind="Decimal">
+      <FacetDescriptions>
+        <Precision Minimum="1" Maximum="38" Constant="false" DefaultValue="18" />
+        <Scale Minimum="0" Maximum="9" Constant="false" DefaultValue="0" />
+      </FacetDescriptions>
+    </Type>
+    
+    However, as per Faisal Mohamood at Microsoft, map to Edm.Decimal(251, 0).
+    -->
+    <Type Name="interval day to second" PrimitiveTypeKind="Decimal">
+      <FacetDescriptions>
+        <Precision Minimum="1" Maximum="251" Constant="false" DefaultValue="251" />
+        <Scale Minimum="0" Maximum="9" Constant="false" DefaultValue="6" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added rowid -->
+    <Type Name="rowid" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="18" Constant="true" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="true" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added urowid -->
+    <Type Name="urowid" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="4000" Constant="true" />
+        <Unicode DefaultValue="false" Constant="true" />
+        <FixedLength DefaultValue="true" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added float -->
+    <!-- shsu: support ANSI type
+         FLOAT = FLOAT (126) = 126 x 0.30103 = approx 37.9 digits of precision.
+         Put maximum precision 126 here will allow EDM wizard to display columns of
+         float or float(126) where 126 is the maximum. Scale is between -84 and 127.
+    -->
+    <Type Name="float" PrimitiveTypeKind="Decimal" >
+      <FacetDescriptions>
+        <Precision Minimum="0" Maximum="126" Constant="false" DefaultValue="0" />
+        <Scale Minimum="0" Maximum="38" Constant="false" DefaultValue="0" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added bfile 
+         MaxLength is in bytes. ALL_TAB_COLUMNS data_length is 530 in bytes for BFILE.-->
+    <Type Name="bfile" PrimitiveTypeKind="Binary" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added xmltype -->
+    <Type Name="xmltype" PrimitiveTypeKind="String" >
+      <FacetDescriptions>
+        <MaxLength DefaultValue="2147483647" Constant="true" />
+        <Unicode DefaultValue="true" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    <!-- shsu: added binary_integer -->
+    <Type Name="binary_integer" PrimitiveTypeKind="Int32"></Type>
+    <!-- shsu: added pl/sql boolean -->
+    <Type Name="pl/sql boolean" PrimitiveTypeKind="Boolean"></Type>
+    <!-- shsu: added mlslabel -->
+    <!--
+    <Type Name="mlslabel" PrimitiveTypeKind="Binary">
+      <FacetDescriptions>
+        <MaxLength DefaultValue="12345" Constant="true" />
+        <FixedLength DefaultValue="false" Constant="true" />
+      </FacetDescriptions>
+    </Type>
+    -->
+    <!-- shsu: common solution for EDM and LightSwitch wizard-->
+    <Type Name="odp_internal_use_type" PrimitiveTypeKind="Boolean"></Type>
+  </Types>
+  <Functions>
+    <!-- Entity SQL Canonical Functions -->
+    <!-- Aggregate ======================================= -->
+    <!-- Avg -->
+    <Function Name="Avg" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="Avg" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="Avg" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <Function Name="Avg" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <!-- BigCount -->
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Boolean)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(DateTime)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(DateTimeOffset)" Mode="In" />
+    </Function>
+    <!-- shsu: exclude Time
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Time)" Mode="In" />
+    </Function>
+    -->
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Guid)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(String)" Mode="In" />
+    </Function>
+    <Function Name="BigCount" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Binary)" Mode="In" />
+    </Function>
+    <!-- Count -->
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Boolean)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(DateTime)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(DateTimeOffset)" Mode="In" />
+    </Function>
+    <!-- shsu: exclude Time
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Time)" Mode="In" />
+    </Function>
+    -->
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Guid)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(String)" Mode="In" />
+    </Function>
+    <Function Name="Count" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Binary)" Mode="In" />
+    </Function>
+    <!-- Max -->
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Byte" />
+      <Parameter Name="arg" Type="Collection(Byte)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int16" />
+      <Parameter Name="arg" Type="Collection(Int16)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Single" />
+      <Parameter Name="arg" Type="Collection(Single)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="arg" Type="Collection(DateTime)" Mode="In" />
+    </Function>
+    <!-- shsu: exclude Time
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Time" />
+      <Parameter Name="arg" Type="Collection(Time)" Mode="In" />
+    </Function>
+    -->
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="arg" Type="Collection(DateTimeOffset)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="arg" Type="Collection(String)" Mode="In" />
+    </Function>
+    <Function Name="Max" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Binary" />
+      <Parameter Name="arg" Type="Collection(Binary)" Mode="In" />
+    </Function>
+    <!-- Min -->
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Byte" />
+      <Parameter Name="arg" Type="Collection(Byte)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int16" />
+      <Parameter Name="arg" Type="Collection(Int16)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Single" />
+      <Parameter Name="arg" Type="Collection(Single)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="arg" Type="Collection(DateTime)" Mode="In" />
+    </Function>
+    <!-- shsu: exclude Time
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Time" />
+      <Parameter Name="arg" Type="Collection(Time)" Mode="In" />
+    </Function>
+    -->
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="arg" Type="Collection(DateTimeOffset)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="arg" Type="Collection(String)" Mode="In" />
+    </Function>
+    <Function Name="Min" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Binary" />
+      <Parameter Name="arg" Type="Collection(Binary)" Mode="In" />
+    </Function>
+    <!-- StDev -->
+    <Function Name="StDev" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="StDev" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="StDev" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="StDev" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <!-- StDevP -->
+    <Function Name="StDevP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="StDevP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="StDevP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="StDevP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <!-- Var -->
+    <Function Name="Var" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="Var" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="Var" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="Var" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <!-- VarP -->
+    <Function Name="VarP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int32)" Mode="In" />
+    </Function>
+    <Function Name="VarP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Int64)" Mode="In" />
+    </Function>
+    <Function Name="VarP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Double)" Mode="In" />
+    </Function>
+    <Function Name="VarP" Aggregate="true" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Collection(Decimal)" Mode="In" />
+    </Function>
+    <!-- Math ======================================= -->
+    <!-- Abs -->
+    <Function Name="Abs" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Abs" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Int64" Mode="In" />
+    </Function>
+    <Function Name="Abs" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Abs" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Double" Mode="In" />
+    </Function>
+    <!-- Ceiling -->
+    <Function Name="Ceiling" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Ceiling" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Int64" Mode="In" />
+    </Function>
+    <Function Name="Ceiling" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Ceiling" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Double" Mode="In" />
+    </Function>
+    <!-- Floor -->
+    <Function Name="Floor" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="arg" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Floor" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="arg" Type="Int64" Mode="In" />
+    </Function>
+    <Function Name="Floor" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="arg" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Floor" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="arg" Type="Double" Mode="In" />
+    </Function>
+    <!-- Power -->
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="x" Type="Int32" Mode="In" />
+      <Parameter Name="y" Type="Double" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="x" Type="Int64" Mode="In" />
+      <Parameter Name="y" Type="Double" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="x" Type="Decimal" Mode="In" />
+      <Parameter Name="y" Type="Double" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="x" Type="Double" Mode="In" />
+      <Parameter Name="y" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="x" Type="Decimal" Mode="In" />
+      <Parameter Name="y" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="x" Type="Double" Mode="In" />
+      <Parameter Name="y" Type="Double" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="x" Type="Int64" Mode="In" />
+      <Parameter Name="y" Type="Decimal" Mode="In" />
+    </Function>
+    <Function Name="Power" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="x" Type="Int32" Mode="In" />
+      <Parameter Name="y" Type="Decimal" Mode="In" />
+    </Function>
+    <!-- Round -->
+    <Function Name="Round" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="numeric_expression" Type="Int32" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Round" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="numeric_expression" Type="Int64" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Round" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="numeric_expression" Type="Decimal" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Round" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="numeric_expression" Type="Double" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <!-- Truncate -->
+    <Function Name="Truncate" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="numeric_expression" Type="Int32" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Truncate" BuiltIn="true">
+      <ReturnType Type="Int64" />
+      <Parameter Name="numeric_expression" Type="Int64" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Truncate" BuiltIn="true">
+      <ReturnType Type="Decimal" />
+      <Parameter Name="numeric_expression" Type="Decimal" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="Truncate" BuiltIn="true">
+      <ReturnType Type="Double" />
+      <Parameter Name="numeric_expression" Type="Double" Mode="In" />
+      <Parameter Name="digits" Type="Int32" Mode="In" />
+    </Function>
+    <!-- String ======================================= -->
+    <!-- Concat -->
+    <Function Name="Concat" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str1" Type="String" Mode="In" />
+      <Parameter Name="str2" Type="String" Mode="In" />
+    </Function>
+    <!-- Contains -->
+    <Function Name="Contains" BuiltIn="true">
+      <ReturnType Type="Boolean" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="searched_str" Type="String" Mode="In" />
+    </Function>
+    <!-- EndsWith -->
+    <Function Name="EndsWith" BuiltIn="true">
+      <ReturnType Type="Boolean" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="searched_str" Type="String" Mode="In" />
+    </Function>
+    <!-- IndexOf -->
+    <Function Name="IndexOf" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="searched_str" Type="String" Mode="In" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Left -->
+    <Function Name="Left" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="length" Type="Int64" Mode="In" />
+    </Function>
+    <!-- Length -->
+    <Function Name="Length" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- LTrim -->
+    <Function Name="LTrim" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Replace -->
+    <Function Name="Replace" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str_return" Type="String"  Mode="In" />
+      <Parameter Name="str_searched" Type="String"  Mode="In" />
+      <Parameter Name="str_replacement" Type="String"  Mode="In" />
+    </Function>
+    <!-- Reverse -->
+    <Function Name="Reverse" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Right -->
+    <Function Name="Right" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="length" Type="Int64" Mode="In" />
+    </Function>
+    <!-- RTrim -->
+    <Function Name="RTrim" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Substring -->
+    <Function Name="Substring" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="start" Type="Int64" Mode="In" />
+      <Parameter Name="length" Type="Int64" Mode="In" />
+    </Function>
+    <!-- StartsWith -->
+    <Function Name="StartsWith" BuiltIn="true">
+      <ReturnType Type="Boolean" />
+      <Parameter Name="str" Type="String" Mode="In" />
+      <Parameter Name="searched_str" Type="String" Mode="In" />
+    </Function>
+    <!-- ToLower -->
+    <Function Name="ToLower" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- ToUpper -->
+    <Function Name="ToUpper" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Trim -->
+    <Function Name="Trim" BuiltIn="true">
+      <ReturnType Type="String" />
+      <Parameter Name="str" Type="String" Mode="In" />
+    </Function>
+    <!-- Date and Time ======================================= -->
+    <!-- AddNanoseconds -->
+    <Function Name="AddNanoseconds" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddNanoseconds" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddMicroseconds -->
+    <Function Name="AddMicroseconds" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddMicroseconds" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddMilliseconds -->
+    <Function Name="AddMilliseconds" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddMilliseconds" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddSeconds -->
+    <Function Name="AddSeconds" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddSeconds" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddMinutes -->
+    <Function Name="AddMinutes" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddMinutes" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddHours -->
+    <Function Name="AddHours" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddHours" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddDays -->
+    <Function Name="AddDays" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddDays" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddMonths -->
+    <Function Name="AddMonths" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddMonths" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- AddYears -->
+    <Function Name="AddYears" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <Function Name="AddYears" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="number" Type="Int32" Mode="In" />
+    </Function>
+    <!-- CreateDateTime -->
+    <Function Name="CreateDateTime" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="year" Type="Int32" Mode="In" />
+      <Parameter Name="month" Type="Int32" Mode="In" /> 
+      <Parameter Name="day" Type="Int32" Mode="In" />
+      <Parameter Name="hour" Type="Int32" Mode="In" />
+      <Parameter Name="minute" Type="Int32" Mode="In" />
+      <Parameter Name="second" Type="Double" Mode="In" />
+    </Function>
+    <!-- CreateDateTimeOffset -->
+    <Function Name="CreateDateTimeOffset" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="year" Type="Int32" Mode="In" />
+      <Parameter Name="month" Type="Int32" Mode="In" />
+      <Parameter Name="day" Type="Int32" Mode="In" />
+      <Parameter Name="hour" Type="Int32" Mode="In" />
+      <Parameter Name="minute" Type="Int32" Mode="In" />
+      <Parameter Name="second" Type="Double" Mode="In" />
+      <Parameter Name="tzoffset" Type="Int32" Mode="In" />
+    </Function>
+    <!-- CreateTime -->
+    <!-- shsu exclude CreateTime 
+    <Function Name="CreateTime" BuiltIn="true">
+      <ReturnType Type="Time" />
+      <Parameter Name="hour" Type="Int32" Mode="In" />
+      <Parameter Name="minute" Type="Int32" Mode="In" />
+      <Parameter Name="second" Type="Double" Mode="In" />
+    </Function>
+    -->
+    <!-- CurrentDateTime -->
+    <Function Name="CurrentDateTime" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+    </Function>
+    <!-- CurrentDateTimeOffset -->
+    <Function Name="CurrentDateTimeOffset" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+    </Function>
+    <!-- CurrentUtcDateTime -->
+    <Function Name="CurrentUtcDateTime" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+    </Function>
+    <!-- Day -->
+    <Function Name="Day" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Day" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DayOfYear -->
+    <Function Name="DayOfYear" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DayOfYear" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffNanoseconds -->
+    <Function Name="DiffNanoseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffNanoseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffMilliseconds -->
+    <Function Name="DiffMilliseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffMilliseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffMicroseconds -->
+    <Function Name="DiffMicroseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffMicroseconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffSeconds -->
+    <Function Name="DiffSeconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffSeconds" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffMinutes -->
+    <Function Name="DiffMinutes" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffMinutes" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffHours -->
+    <Function Name="DiffHours" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffHours" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffDays -->
+    <Function Name="DiffDays" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffDays" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffMonths -->
+    <Function Name="DiffMonths" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffMonths" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- DiffYears -->
+    <Function Name="DiffYears" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetime" Type="DateTime" Mode="In" />
+      <Parameter Name="end_datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="DiffYears" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="start_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+      <Parameter Name="end_datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- GetTotalOffsetMinutes -->
+    <Function Name="GetTotalOffsetMinutes" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Hour -->
+    <Function Name="Hour" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Hour" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Millisecond -->
+    <Function Name="Millisecond" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Millisecond" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Minute -->
+    <Function Name="Minute" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Minute" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Month -->
+    <Function Name="Month" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Month" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Second -->
+    <Function Name="Second" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Second" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- TruncateTime -->
+    <Function Name="TruncateTime" BuiltIn="true">
+      <ReturnType Type="DateTime" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="TruncateTime" BuiltIn="true">
+      <ReturnType Type="DateTimeOffset" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!-- Year -->
+    <Function Name="Year" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetime" Type="DateTime" Mode="In" />
+    </Function>
+    <Function Name="Year" BuiltIn="true">
+      <ReturnType Type="Int32" />
+      <Parameter Name="datetimeoffset" Type="DateTimeOffset" Mode="In" />
+    </Function>
+    <!--shsu Bitwise canonical functions are not listed because 
+    they have counterparts in the Base Class Library (BCL) -->
+    <!-- Other canonical functions -->
+    <!-- NewGuid -->
+    <Function Name="NewGuid" BuiltIn="true">
+      <ReturnType Type="Guid" />
+    </Function>
+    <!-- Oracle built-in functions -->
+  </Functions>
+</ProviderManifest>

@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Project was exported from assembly: D:\tfs\母子健康手册\trunk\MACHMSystem\packages\Oracle.ManagedDataAccess.EntityFramework.12.1.2400\lib\net45\Oracle.ManagedDataAccess.EntityFramework.dll-->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{733DDC1A-6A67-4A46-8718-F27877C0774E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Oracle.ManagedDataAccess.EntityFramework</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ApplicationVersion>6.121.2.0</ApplicationVersion>
+    <FileAlignment>512</FileAlignment>
+    <RootNamespace>Oracle.ManagedDataAccess.EntityFramework</RootNamespace>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>D:\tfs\母子健康手册\trunk\MACHMSystem\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Mock\ODTSettings.cs" />
+    <Compile Include="System\Data\Common\Utils\EF6MetadataHelpers.cs" />
+    <Compile Include="EFOracleDdlBuilder.cs" />
+    <Compile Include="MetadataHelper.cs" />
+    <Compile Include="EFOracleProviderManifest.cs" />
+    <Compile Include="EFProviderSettings.cs" />
+    <Compile Include="EFOracleVersion.cs" />
+    <Compile Include="EFOracleVersionUtils.cs" />
+    <Compile Include="EntityFrameworkProviderSettings.cs" />
+    <Compile Include="CommandTreeUtils.cs" />
+    <Compile Include="EntityUtils.cs" />
+    <Compile Include="OracleConnectionFactory.cs" />
+    <Compile Include="OracleMigrationSqlGenerator.cs" />
+    <Compile Include="EFOracleProviderServices.cs" />
+    <Compile Include="SqlGen\BasicExpressionVisitor.cs" />
+    <Compile Include="SqlGen\DmlSqlGenerator.cs" />
+    <Compile Include="SqlGen\ISqlFragment.cs" />
+    <Compile Include="SqlGen\Symbol.cs" />
+    <Compile Include="SqlGen\JoinSymbol.cs" />
+    <Compile Include="SqlGen\SqlBuilder.cs" />
+    <Compile Include="SqlGen\SqlGenerator.cs" />
+    <Compile Include="SqlGen\SqlSelectStatement.cs" />
+    <Compile Include="SqlGen\SqlWriter.cs" />
+    <Compile Include="SqlGen\SymbolPair.cs" />
+    <Compile Include="SqlGen\SymbolTable.cs" />
+    <Compile Include="SqlGen\TopClause.cs" />
+    <Compile Include="Oracle\DataAccess\EntityFramework\Properties\Resources.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx" />
+    <EmbeddedResource Include="Resources\EFOracleProviderManifest.xml" />
+    <EmbeddedResource Include="Resources\EFOracleProviderManifest_12c_or_later.xml" />
+    <EmbeddedResource Include="Resources\EFOracleStoreSchemaDefinition.ssdl" />
+    <EmbeddedResource Include="Resources\EFOracleStoreSchemaDefinitionVersion3.ssdl" />
+    <EmbeddedResource Include="Resources\EFOracleStoreSchemaMapping.msl" />
+    <EmbeddedResource Include="Resources\EFOracleStoreSchemaMappingVersion3.msl" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

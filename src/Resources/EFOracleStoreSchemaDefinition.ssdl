@@ -1,0 +1,1213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Schema Namespace="Oracle" Provider="Oracle.DataAccess.Client" ProviderManifestToken="9.2" Alias="Self" xmlns="http://schemas.microsoft.com/ado/2006/04/edm/ssdl">
+  <EntityContainer Name="Schema">
+    <EntitySet Name="STables" EntityType="Self.Table">
+      <DefiningQuery>
+      <!-- shsu: display objects owned by other schema by appending owner names. We select from 
+      ALL_TABLES, instead of ALL_ALL_TABLES, because object tables are not supported at this time. -->
+      <!-- MS OracleClient sample code
+        SELECT
+        '''' || TABLE_NAME || ''''    "Id"
+        ,   CAST(NULL as varchar2(1)) "CatalogName"
+        ,   sys_context('USERENV', 'CURRENT_USER') "SchemaName"
+        ,   TABLE_NAME                "Name"
+        FROM
+        USER_TABLES
+      -->
+        SELECT
+        '''' || TABLE_NAME || ''''    "Id"
+        ,   CAST(NULL as varchar2(1)) "CatalogName"
+        ,   OWNER                     "SchemaName"
+        ,   TABLE_NAME                "Name"
+        FROM ALL_TABLES
+        WHERE OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="STableColumns" EntityType="Self.TableColumn">
+      <DefiningQuery>
+        <!-- shsu: fixed for Oracle timestamp and interval types by stripping off precision -->
+        <!-- and for interval types let precision = precision + scale if precision is less than scale -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || c.TABLE_NAME || '_' || c.COLUMN_NAME || '''' "Id"
+        , '''' || c.TABLE_NAME || '''' "ParentId"
+        , c.COLUMN_NAME         "Name"
+        , c.COLUMN_ID           "Ordinal"
+        , CASE c.NULLABLE WHEN 'Y' THEN 1 ELSE 0 END "IsNullable"
+        , LOWER(c.DATA_TYPE)    "TypeName"
+        , c.DATA_LENGTH         "MaxLength"
+        , c.DATA_PRECISION      "Precision"
+        , c.DATA_PRECISION      "DateTimePrecision"
+        , c.DATA_SCALE          "Scale"
+        , CAST(NULL as varchar2(1)) "CollationCatalog"
+        , CAST(NULL as varchar2(1)) "CollationSchema"
+        , CAST(NULL as varchar2(1)) "CollationName"
+        , CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        , CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        , c.CHARACTER_SET_NAME  "CharacterSetName"
+        , 0                     "IsMultiSet"
+        , 0                     "IsIdentity"
+        , 0                     "IsStoreGenerated"
+        , c.DATA_DEFAULT        "Default"
+        FROM
+        USER_TAB_COLUMNS c
+        INNER JOIN USER_OBJECTS o on o.OBJECT_NAME = c.TABLE_NAME
+        AND o.OBJECT_TYPE = 'TABLE'
+        -->
+        SELECT
+        '''' || c.TABLE_NAME || '_' || c.COLUMN_NAME || '''' "Id"
+        , '''' || c.TABLE_NAME || '''' "ParentId"
+        , c.COLUMN_NAME         "Name"
+        , c.COLUMN_ID           "Ordinal"
+        , CASE c.NULLABLE WHEN 'Y' THEN 1 ELSE 0 END "IsNullable"
+        , (CASE WHEN INSTR(c.data_type, 'INTERVAL YEAR') != 0 THEN 'interval year to month'
+        WHEN INSTR(c.data_type, 'INTERVAL DAY')  != 0 THEN 'interval day to second'
+        WHEN INSTR(c.data_type, 'WITH TIME ZONE')  != 0  THEN 'timestamp with time zone'
+        WHEN INSTR(c.data_type, 'WITH LOCAL TIME ZONE')  != 0 THEN 'timestamp with local time zone'
+        WHEN INSTR(c.data_type, 'TIMESTAMP') != 0 AND INSTR(c.data_type, 'TIME ZONE') = 0 THEN 'timestamp'
+        ELSE LOWER(c.data_type) END) "TypeName"
+        , CASE c.data_type
+        WHEN 'CHAR' THEN c.char_length
+        WHEN 'VARCHAR2' THEN c.char_length
+        WHEN 'NCHAR' THEN c.char_length
+        WHEN 'NVARCHAR2' THEN c.char_length
+        ELSE c.DATA_LENGTH END       "MaxLength"
+        , (CASE WHEN INSTR(c.data_type, 'INTERVAL YEAR') != 0 AND c.DATA_PRECISION &lt; c.DATA_SCALE THEN c.DATA_SCALE
+        WHEN INSTR(c.data_type, 'INTERVAL DAY') != 0 AND c.DATA_PRECISION &lt; c.DATA_SCALE THEN c.DATA_SCALE
+        ELSE c.DATA_PRECISION END)       "Precision"
+        , c.DATA_PRECISION      "DateTimePrecision"
+        , c.DATA_SCALE          "Scale"
+        , CAST(NULL as varchar2(1)) "CollationCatalog"
+        , CAST(NULL as varchar2(1)) "CollationSchema"
+        , CAST(NULL as varchar2(1)) "CollationName"
+        , CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        , CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        , c.CHARACTER_SET_NAME  "CharacterSetName"
+        , 0                     "IsMultiSet"
+        , 0                     "IsIdentity"
+        , 0                     "IsStoreGenerated"
+        , c.DATA_DEFAULT        "Default"
+        FROM
+        ALL_TAB_COLUMNS c, ALL_OBJECTS o
+        WHERE o.OBJECT_NAME = c.TABLE_NAME
+        AND o.OBJECT_TYPE = 'TABLE'
+        AND o.OWNER = c.OWNER
+        AND o.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SViews" EntityType="Self.View">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' ||  VIEW_NAME || ''''    "Id"
+        ,   CAST(NULL as varchar2(1)) "CatalogName"
+        ,   sys_context('USERENV', 'CURRENT_USER') "SchemaName"
+        ,   VIEW_NAME                 "Name"
+        ,   TEXT                      "ViewDefinition"
+        ,   CASE VIEW_TYPE WHEN 'MATERIALIZED' THEN 1 ELSE 0 END "IsUpdatable"
+        FROM
+        USER_VIEWS
+        -->
+        SELECT
+        '''' ||  VIEW_NAME || ''''    "Id"
+        ,   CAST(NULL as varchar2(1)) "CatalogName"
+        ,   OWNER                     "SchemaName"
+        ,   VIEW_NAME                 "Name"
+        ,   TEXT                      "ViewDefinition"
+        ,   CASE VIEW_TYPE WHEN 'MATERIALIZED' THEN 1 ELSE 0 END "IsUpdatable"
+        FROM ALL_VIEWS
+        WHERE OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SViewColumns" EntityType="Self.ViewColumn">
+      <DefiningQuery>
+        <!-- shsu: fixed for Oracle timestamp and interval types by stripping off precision -->
+        <!-- and for interval types let precision = precision + scale if precision is less than scale -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || c.TABLE_NAME || '_' || c.COLUMN_NAME || '''' "Id"
+        , '''' || c.TABLE_NAME || '''' "ParentId"
+        , c.COLUMN_NAME         "Name"
+        , c.COLUMN_ID           "Ordinal"
+        , CASE c.NULLABLE WHEN 'Y' THEN 1 ELSE 0 END "IsNullable"
+        , LOWER(c.DATA_TYPE)    "TypeName"
+        , c.DATA_LENGTH         "MaxLength"
+        , c.DATA_PRECISION      "Precision"
+        , c.DATA_PRECISION      "DateTimePrecision"
+        , c.DATA_SCALE          "Scale"
+        , CAST(NULL as varchar2(1)) "CollationCatalog"
+        , CAST(NULL as varchar2(1)) "CollationSchema"
+        , CAST(NULL as varchar2(1)) "CollationName"
+        , CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        , CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        , c.CHARACTER_SET_NAME  "CharacterSetName"
+        , 0                     "IsMultiSet"
+        , 0                     "IsIdentity"
+        , 0                     "IsStoreGenerated"
+        , c.DATA_DEFAULT        "Default"
+        FROM
+        USER_TAB_COLUMNS c
+        INNER JOIN USER_OBJECTS o on o.OBJECT_NAME = c.TABLE_NAME
+        AND o.OBJECT_TYPE = 'VIEW'
+        -->
+        SELECT
+        '''' || c.TABLE_NAME || '_' || c.COLUMN_NAME || '''' "Id"
+        , '''' || c.TABLE_NAME || '''' "ParentId"
+        , c.COLUMN_NAME         "Name"
+        , c.COLUMN_ID           "Ordinal"
+        , CASE c.NULLABLE WHEN 'Y' THEN 1 ELSE 0 END "IsNullable"
+        , (CASE WHEN INSTR(c.data_type, 'INTERVAL YEAR') != 0 THEN 'interval year to month'
+        WHEN INSTR(c.data_type, 'INTERVAL DAY') != 0 THEN 'interval day to second'
+        WHEN INSTR(c.data_type, 'WITH TIME ZONE') != 0  THEN 'timestamp with time zone'
+        WHEN INSTR(c.data_type, 'WITH LOCAL TIME ZONE') != 0 THEN 'timestamp with local time zone'
+        WHEN INSTR(c.data_type, 'TIMESTAMP') != 0 AND INSTR(c.data_type, 'TIME ZONE') = 0 THEN 'timestamp'
+        ELSE LOWER(c.data_type) END)  "TypeName"
+        , CASE c.data_type
+        WHEN 'CHAR' THEN c.char_length
+        WHEN 'VARCHAR2' THEN c.char_length
+        WHEN 'NCHAR' THEN c.char_length
+        WHEN 'NVARCHAR2' THEN c.char_length
+        ELSE c.DATA_LENGTH END       "MaxLength"
+        , (CASE WHEN INSTR(c.data_type, 'INTERVAL YEAR') != 0 AND c.DATA_PRECISION &lt; c.DATA_SCALE THEN c.DATA_SCALE
+        WHEN INSTR(c.data_type, 'INTERVAL DAY') != 0 AND c.DATA_PRECISION &lt; c.DATA_SCALE THEN c.DATA_SCALE
+        ELSE c.DATA_PRECISION END)       "Precision"
+        , c.DATA_PRECISION      "DateTimePrecision"
+        , c.DATA_SCALE          "Scale"
+        , CAST(NULL as varchar2(1)) "CollationCatalog"
+        , CAST(NULL as varchar2(1)) "CollationSchema"
+        , CAST(NULL as varchar2(1)) "CollationName"
+        , CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        , CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        , c.CHARACTER_SET_NAME  "CharacterSetName"
+        , 0                     "IsMultiSet"
+        , 0                     "IsIdentity"
+        , 0                     "IsStoreGenerated"
+        , c.DATA_DEFAULT        "Default"
+        FROM ALL_TAB_COLUMNS c, ALL_OBJECTS o
+        WHERE o.OBJECT_NAME = c.TABLE_NAME
+        AND o.OBJECT_TYPE = 'VIEW'
+        AND o.OWNER = c.OWNER
+        AND o.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SFunctions" EntityType="Self.Function">
+      <DefiningQuery>
+        <!-- shsu: 1. fixed SchemaName and format for functions within packages 
+                   2. excluded functions that return ref cursor and let it appear like procedure. See SProcedures. -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || ret.PACKAGE_NAME || '_' || func.OBJECT_NAME || ''''	"Id"
+        ,	CAST(NULL as varchar2(1)) "CatalogName"
+        ,	(CASE WHEN ret.PACKAGE_NAME IS NULL THEN sys_context('USERENV', 'CURRENT_USER') ELSE ret.PACKAGE_NAME END) "SchemaName"
+        ,	func.OBJECT_NAME    "Name"
+        ,	LOWER(ret.DATA_TYPE)"ReturnTypeName"
+        ,	ret.DATA_LENGTH     "ReturnMaxLength"
+        ,	ret.DATA_PRECISION	"ReturnPrecision"
+        ,	ret.DATA_PRECISION	"ReturnDateTimePrecision"
+        ,	ret.DATA_SCALE		  "ReturnScale"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationSchema"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationName"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetSchema"
+        ,	ret.CHARACTER_SET_NAME	"ReturnCharacterSetName"
+        ,	0	                  "ReturnIsMultiSet"
+        ,	0	                  "IsAggregate"
+        ,	0	                  "IsBuiltIn"
+        ,	0	                  "IsNiladic"
+        FROM
+        USER_PROCEDURES func
+        INNER JOIN USER_OBJECTS obj ON obj.OBJECT_NAME = func.OBJECT_NAME
+        AND obj.OBJECT_TYPE = 'FUNCTION'
+        INNER JOIN USER_ARGUMENTS ret on ret.OBJECT_NAME = func.OBJECT_NAME
+        AND ret.POSITION = 0
+        -->
+        SELECT
+        '''' || (CASE WHEN PACKAGE_NAME IS NOT NULL THEN PACKAGE_NAME || '.' || OBJECT_NAME ELSE OBJECT_NAME END) || ''''	"Id"
+        ,	CAST(NULL as varchar2(1)) "CatalogName"
+        , OWNER                     "SchemaName"
+        ,	(CASE WHEN PACKAGE_NAME IS NOT NULL THEN PACKAGE_NAME || '.' || OBJECT_NAME ELSE OBJECT_NAME END) "Name"
+        ,	LOWER(DATA_TYPE) "ReturnTypeName"
+        ,	DATA_LENGTH     "ReturnMaxLength"
+        ,	DATA_PRECISION	"ReturnPrecision"
+        ,	DATA_PRECISION	"ReturnDateTimePrecision"
+        ,	DATA_SCALE		  "ReturnScale"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationSchema"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationName"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetSchema"
+        ,	CHARACTER_SET_NAME	"ReturnCharacterSetName"
+        ,	0	                  "ReturnIsMultiSet"
+        ,	0	                  "IsAggregate"
+        ,	0	                  "IsBuiltIn"
+        ,	0	                  "IsNiladic"
+        FROM ALL_ARGUMENTS A
+        WHERE DATA_LEVEL = 0
+        AND (SEQUENCE = 1 AND POSITION = 0) AND LOWER(DATA_TYPE) != 'ref cursor'
+        AND ((PACKAGE_NAME IS NULL or EXISTS (select 'x' from all_objects O where A.PACKAGE_NAME = O.OBJECT_NAME AND A.OWNER=O.OWNER AND O.OBJECT_TYPE='PACKAGE')))
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND A.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+        <!--shsu:old
+        SELECT
+        '''' || func.OBJECT_NAME || ''''	"Id"
+        ,	CAST(NULL as varchar2(1)) "CatalogName"
+        , func.OWNER                "SchemaName"
+        ,	func.OBJECT_NAME          "Name"
+        ,	LOWER(ret.DATA_TYPE)"ReturnTypeName"
+        ,	ret.DATA_LENGTH     "ReturnMaxLength"
+        ,	ret.DATA_PRECISION	"ReturnPrecision"
+        ,	ret.DATA_PRECISION	"ReturnDateTimePrecision"
+        ,	ret.DATA_SCALE		  "ReturnScale"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationSchema"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationName"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetSchema"
+        ,	ret.CHARACTER_SET_NAME	"ReturnCharacterSetName"
+        ,	0	                  "ReturnIsMultiSet"
+        ,	0	                  "IsAggregate"
+        ,	0	                  "IsBuiltIn"
+        ,	0	                  "IsNiladic"
+        FROM
+        ALL_PROCEDURES func
+        INNER JOIN ALL_OBJECTS obj ON obj.OBJECT_NAME = func.OBJECT_NAME
+        AND obj.OBJECT_TYPE = 'FUNCTION' AND func.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        INNER JOIN ALL_ARGUMENTS ret on ret.OBJECT_NAME = func.OBJECT_NAME
+        AND ret.POSITION = 0 AND ret.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        UNION SELECT
+        '''' || ar.PACKAGE_NAME || '.' || OBJECT_NAME || ''''	"Id"
+        ,	CAST(NULL as varchar2(1)) "CatalogName"
+        ,	ar.OWNER                  "SchemaName"
+        ,   ar.PACKAGE_NAME || '.' || OBJECT_NAME   "Name"
+        ,	LOWER(ar.DATA_TYPE)"ReturnTypeName"
+        ,	DATA_LENGTH     "ReturnMaxLength"
+        ,	DATA_PRECISION	"ReturnPrecision"
+        ,	DATA_PRECISION	"ReturnDateTimePrecision"
+        ,	DATA_SCALE		  "ReturnScale"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationSchema"
+        ,	CAST(NULL as varchar2(1)) "ReturnCollationName"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "ReturnCharacterSetSchema"
+        ,	ar.CHARACTER_SET_NAME	"ReturnCharacterSetName"
+        ,	0	                  "ReturnIsMultiSet"
+        ,	0	                  "IsAggregate"
+        ,	0	                  "IsBuiltIn"
+        ,	0	                  "IsNiladic"
+        FROM ALL_ARGUMENTS ar WHERE POSITION = 0 and PACKAGE_NAME IS NOT NULL
+        AND (ar.OVERLOAD IS NULL OR ar.OVERLOAD = '1')
+        AND ar.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        -->
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SFunctionParameters" EntityType="Self.Parameter">
+      <DefiningQuery>
+        <!-- shsu: 1. fixed format and inout parameter issues for standalone functions and functions within packages 
+                   2. excluded ref cursor return type and parameters to support implicit ref cursor -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || arg.OBJECT_NAME || '_' || arg.ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || arg.PACKAGE_NAME || '_' || func.OBJECT_NAME || ''''	"ParentId"
+        ,	arg.ARGUMENT_NAME   "Name"
+        ,	arg.POSITION	      "Ordinal"
+        ,	LOWER(arg.DATA_TYPE)"TypeName"
+        ,	arg.DATA_LENGTH     "MaxLength"
+        ,	arg.DATA_PRECISION  "Precision"
+        ,	arg.DATA_PRECISION	"DateTimePrecision"
+        ,	arg.DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	arg.CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        ,	arg.IN_OUT	        "Mode"
+        ,	arg.DEFAULT_VALUE   "Default"
+        FROM
+        USER_ARGUMENTS arg
+        INNER JOIN USER_OBJECTS func ON func.OBJECT_ID = arg.OBJECT_ID
+        AND func.OBJECT_TYPE = 'FUNCTION'
+        WHERE
+        arg.POSITION &lt;&gt; 0
+        -->
+        SELECT
+        '''' || AA.OBJECT_NAME || '_' || ARGUMENT_NAME || ''''	"Id"
+        ,'''' || (CASE WHEN AA.PACKAGE_NAME IS NOT NULL THEN AA.PACKAGE_NAME || '.' || AA.OBJECT_NAME ELSE AA.OBJECT_NAME END) || ''''   "ParentId"
+        , ARGUMENT_NAME   "Name"
+        ,	POSITION	      "Ordinal"
+        ,	LOWER(DATA_TYPE)"TypeName"
+        ,	DATA_LENGTH     "MaxLength"
+        ,	DATA_PRECISION  "Precision"
+        ,	DATA_PRECISION	"DateTimePrecision"
+        ,	DATA_SCALE	"Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	CHARACTER_SET_NAME	  "CharacterSetName"
+        ,	0	                    "IsMultiSet"
+        , (CASE WHEN IN_OUT = 'IN/OUT' THEN 'INOUT' ELSE IN_OUT END) "Mode"
+        ,	DEFAULT_VALUE   "Default"
+        FROM ALL_ARGUMENTS AA,
+        (SELECT A.OWNER, PACKAGE_NAME, A.OBJECT_NAME
+        FROM ALL_ARGUMENTS A
+        WHERE DATA_LEVEL = 0
+        AND (SEQUENCE = 1 AND POSITION = 0) AND LOWER(DATA_TYPE) != 'ref cursor'
+        AND ((PACKAGE_NAME IS NULL or EXISTS (select 'x' from all_objects O where A.PACKAGE_NAME = O.OBJECT_NAME AND A.OWNER=O.OWNER AND O.OBJECT_TYPE='PACKAGE')))
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND A.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))) NEWT
+        WHERE DATA_LEVEL = 0 AND (AA.PACKAGE_NAME IS NULL OR AA.PACKAGE_NAME = NEWT.PACKAGE_NAME)
+        AND AA.OBJECT_NAME = NEWT.OBJECT_NAME
+        AND AA.OWNER = NEWT.OWNER
+        AND AA.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND SEQUENCE &gt; 1
+        AND POSITION &gt; 0
+        AND LOWER(DATA_TYPE) != 'ref cursor'
+        <!-- shsu:old
+        SELECT
+        '''' || arg.OBJECT_NAME || '_' || arg.ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || func.OBJECT_NAME || ''''	                        "ParentId"
+        ,	arg.ARGUMENT_NAME   "Name"
+        ,	arg.POSITION	  "Ordinal"
+        ,	LOWER(arg.DATA_TYPE)"TypeName"
+        ,	arg.DATA_LENGTH     "MaxLength"
+        ,	arg.DATA_PRECISION  "Precision"
+        ,	arg.DATA_PRECISION	"DateTimePrecision"
+        ,	arg.DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	arg.CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        , (CASE WHEN INSTR(UPPER(arg.IN_OUT), 'IN/OUT') != 0 THEN 'INOUT' ELSE arg.IN_OUT END) "Mode"
+        ,	arg.DEFAULT_VALUE   "Default"
+        FROM
+        ALL_ARGUMENTS arg
+        INNER JOIN ALL_OBJECTS func ON func.OBJECT_ID = arg.OBJECT_ID
+        AND func.OBJECT_TYPE = 'FUNCTION'
+        WHERE
+        arg.POSITION != 0 AND arg.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        UNION ALL
+        SELECT
+        '''' || PACKAGE_NAME || '.' || OBJECT_NAME || '_' || ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || PACKAGE_NAME || '.' || OBJECT_NAME || ''''	"ParentId"
+        ,	ARGUMENT_NAME   "Name"
+        ,	POSITION	      "Ordinal"
+        ,	LOWER(DATA_TYPE)"TypeName"
+        ,	DATA_LENGTH     "MaxLength"
+        ,	DATA_PRECISION  "Precision"
+        ,	DATA_PRECISION	"DateTimePrecision"
+        ,	DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        , (CASE WHEN INSTR(UPPER(IN_OUT), 'IN/OUT') != 0 THEN 'INOUT' ELSE IN_OUT END) "Mode"
+        ,	DEFAULT_VALUE   "Default"
+        FROM ALL_ARGUMENTS WHERE POSITION != 0 AND PACKAGE_NAME IS NOT NULL AND
+        OBJECT_NAME IN (SELECT OBJECT_NAME FROM ALL_ARGUMENTS WHERE POSITION = 0
+        AND DATA_TYPE IS NOT NULL AND PACKAGE_NAME IS NOT NULL)
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        -->
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SProcedures" EntityType="Self.Procedure">
+      <DefiningQuery>
+        <!-- shsu: 1. fixed SchemaName and format for standalone procedures and procedures within packages 
+                   2. included functions that return ref cursor so that they can be used in Function Import. -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || (CASE WHEN proc.PROCEDURE_NAME IS NULL THEN '' ELSE proc.OBJECT_NAME END) || '_'|| (CASE WHEN proc.PROCEDURE_NAME IS NULL THEN proc.OBJECT_NAME ELSE proc.PROCEDURE_NAME END) || '''' as "Id"
+        , CAST(NULL as varchar2(1)) "CatalogName"
+        , CASE WHEN proc.PROCEDURE_NAME IS NOT NULL THEN proc.PROCEDURE_NAME WHEN proc.OBJECT_NAME IS NULL THEN sys_context('USERENV', 'CURRENT_USER') ELSE proc.OBJECT_NAME END "SchemaName"
+        , CASE WHEN proc.PROCEDURE_NAME IS NULL THEN proc.OBJECT_NAME ELSE proc.PROCEDURE_NAME END "Name"
+        FROM
+        USER_PROCEDURES proc
+        INNER JOIN USER_OBJECTS obj ON proc.OBJECT_NAME = obj.OBJECT_NAME
+        AND (obj.OBJECT_TYPE = 'PROCEDURE' OR obj.OBJECT_TYPE = 'PACKAGE')
+        -->
+        SELECT
+        '''' || (CASE WHEN PACKAGE_NAME IS NOT NULL THEN PACKAGE_NAME || '.' || OBJECT_NAME ELSE OBJECT_NAME END) || ''''	"Id"
+        ,	CAST(NULL as varchar2(1)) "CatalogName"
+        , OWNER                     "SchemaName"
+        ,	(CASE WHEN PACKAGE_NAME IS NOT NULL THEN PACKAGE_NAME || '.' || OBJECT_NAME ELSE OBJECT_NAME END) "Name"
+        FROM ALL_ARGUMENTS A
+        WHERE DATA_LEVEL = 0
+        AND ((SEQUENCE = 0 OR (SEQUENCE = 1 AND POSITION &gt; 0)) OR (SEQUENCE = 1 AND POSITION = 0 AND LOWER(DATA_TYPE) = 'ref cursor'))
+        AND ((PACKAGE_NAME IS NULL or EXISTS (select 'x' from all_objects O where A.PACKAGE_NAME = O.OBJECT_NAME AND A.OWNER=O.OWNER AND O.OBJECT_TYPE='PACKAGE')))
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND A.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+        <!--shsu:old
+        SELECT
+        '''' || proc.OBJECT_NAME || '''' as "Id"
+        , CAST(NULL as varchar2(1)) "CatalogName"
+        , PROC.OWNER                "SchemaName"
+        , proc.OBJECT_NAME          "Name"
+        FROM
+        ALL_PROCEDURES proc
+        INNER JOIN ALL_OBJECTS obj ON obj.OBJECT_NAME = proc.OBJECT_NAME
+        AND obj.OBJECT_TYPE = 'PROCEDURE' AND proc.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        INNER JOIN ALL_ARGUMENTS ret on ret.OBJECT_NAME = proc.OBJECT_NAME
+        AND ret.POSITION > 0 AND ret.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        UNION
+        SELECT DISTINCT
+        '''' || ar.PACKAGE_NAME || '.' || proc.PROCEDURE_NAME || ''''	"Id"
+        , CAST(NULL as varchar2(1)) "CatalogName"
+        , ar.OWNER                  "SchemaName"
+        , ar.PACKAGE_NAME || '.' || ar.OBJECT_NAME                      "Name"
+        FROM
+        ALL_ARGUMENTS ar
+        INNER JOIN ALL_PROCEDURES proc ON ar.OBJECT_NAME = proc.PROCEDURE_NAME
+        WHERE PACKAGE_NAME IS NOT NULL AND
+        ar.OBJECT_NAME NOT IN
+        (SELECT OBJECT_NAME FROM ALL_ARGUMENTS WHERE POSITION = 0
+        AND DATA_TYPE IS NOT NULL AND PACKAGE_NAME IS NOT NULL)
+        AND (ar.OVERLOAD IS NULL OR ar.OVERLOAD = '1')
+        AND ar.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        -->
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SProcedureParameters" EntityType="Self.Parameter">
+      <DefiningQuery>
+        <!-- shsu: 1. fixed format and inout parameter issues for standalone procedures and procedures within packages 
+                   2. excluded ref cursor parameters to support implicit ref cursor -->
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || arg.OBJECT_NAME || '_' || arg.ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || arg.PACKAGE_NAME || '_' || arg.OBJECT_NAME || ''''	"ParentId"
+        ,	arg.ARGUMENT_NAME       "Name"
+        ,	arg.POSITION	          "Ordinal"
+        ,	LOWER(arg.DATA_TYPE)	  "TypeName"
+        ,	arg.DATA_LENGTH         "MaxLength"
+        ,	arg.DATA_PRECISION      "Precision"
+        ,	arg.DATA_PRECISION	    "DateTimePrecision"
+        ,	arg.DATA_SCALE	        "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	arg.CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                      "IsMultiSet"
+        ,	arg.IN_OUT	            "Mode"
+        ,	arg.DEFAULT_VALUE       "Default"
+        FROM
+        USER_ARGUMENTS arg
+        INNER JOIN USER_OBJECTS obj ON arg.OBJECT_ID = obj.OBJECT_ID
+        AND (obj.OBJECT_TYPE = 'PROCEDURE' OR obj.OBJECT_TYPE = 'PACKAGE')
+        -->
+        SELECT
+        '''' || AA.OBJECT_NAME || '_' || ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || (CASE WHEN AA.PACKAGE_NAME IS NOT NULL THEN AA.PACKAGE_NAME || '.' || AA.OBJECT_NAME ELSE AA.OBJECT_NAME END) || ''''	"ParentId"
+        ,	ARGUMENT_NAME   "Name"
+        ,	POSITION	      "Ordinal"
+        ,	LOWER(DATA_TYPE) "TypeName"
+        ,	DATA_LENGTH     "MaxLength"
+        ,	DATA_PRECISION  "Precision"
+        ,	DATA_PRECISION	"DateTimePrecision"
+        ,	DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        , (CASE WHEN IN_OUT = 'IN/OUT' THEN 'INOUT' ELSE IN_OUT END) "Mode"
+        ,	DEFAULT_VALUE   "Default"
+        FROM ALL_ARGUMENTS AA,
+        (SELECT A.OWNER,
+        A.OBJECT_NAME,
+        A.PACKAGE_NAME
+        FROM ALL_ARGUMENTS A
+        WHERE DATA_LEVEL = 0
+        AND (SEQUENCE = 0 OR (SEQUENCE = 1 AND POSITION &gt; 0)) AND LOWER(DATA_TYPE) != 'ref cursor'
+        AND ((PACKAGE_NAME IS NULL or EXISTS (select 'x' from all_objects O where A.PACKAGE_NAME = O.OBJECT_NAME AND A.OWNER=O.OWNER AND O.OBJECT_TYPE='PACKAGE')))
+        AND (OVERLOAD IS NULL OR OVERLOAD = '1')
+        AND A.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))) NEWT
+        WHERE DATA_LEVEL = 0
+        AND (SEQUENCE = 0 OR (SEQUENCE &gt;= 1 and POSITION &gt; 0)) AND LOWER(DATA_TYPE) != 'ref cursor'
+        AND AA.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+        AND AA.OWNER = NEWT.OWNER
+        AND AA.OBJECT_NAME = NEWT.OBJECT_NAME
+        AND (AA.PACKAGE_NAME IS NULL OR AA.PACKAGE_NAME = NEWT.PACKAGE_NAME)
+        AND (AA.OVERLOAD IS NULL OR AA.OVERLOAD = '1')
+        <!--shsu:old
+        SELECT
+        '''' || arg.OBJECT_NAME || '_' || arg.ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || (CASE WHEN arg.PACKAGE_NAME IS NOT NULL THEN arg.PACKAGE_NAME || '.' || func.OBJECT_NAME ELSE func.OBJECT_NAME END) || ''''	"ParentId"
+        ,	arg.ARGUMENT_NAME   "Name"
+        ,	arg.POSITION	      "Ordinal"
+        ,	LOWER(arg.DATA_TYPE)"TypeName"
+        ,	arg.DATA_LENGTH     "MaxLength"
+        ,	arg.DATA_PRECISION  "Precision"
+        ,	arg.DATA_PRECISION	"DateTimePrecision"
+        ,	arg.DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	arg.CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        , (CASE WHEN INSTR(UPPER(arg.IN_OUT), 'IN/OUT') != 0 THEN 'INOUT' ELSE arg.IN_OUT END) "Mode"
+        ,	arg.DEFAULT_VALUE   "Default"
+        FROM
+        ALL_ARGUMENTS arg
+        INNER JOIN ALL_OBJECTS func ON func.OBJECT_ID = arg.OBJECT_ID
+        AND func.OBJECT_TYPE = 'PROCEDURE'
+        WHERE arg.POSITION != 0 AND arg.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        UNION ALL
+        SELECT
+        '''' || ar.PACKAGE_NAME || '.' || ar.OBJECT_NAME || '_' || ar.ARGUMENT_NAME || ''''	"Id"
+        ,	'''' || ar.PACKAGE_NAME || '.' || ar.OBJECT_NAME || ''''	"ParentId"
+        ,	ar.ARGUMENT_NAME   "Name"
+        ,	ar.POSITION	      "Ordinal"
+        ,	LOWER(ar.DATA_TYPE)"TypeName"
+        ,	ar.DATA_LENGTH     "MaxLength"
+        ,	ar.DATA_PRECISION  "Precision"
+        ,	ar.DATA_PRECISION	"DateTimePrecision"
+        ,	ar.DATA_SCALE	    "Scale"
+        ,	CAST(NULL as varchar2(1)) "CollationCatalog"
+        ,	CAST(NULL as varchar2(1)) "CollationSchema"
+        ,	CAST(NULL as varchar2(1)) "CollationName"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetCatalog"
+        ,	CAST(NULL as varchar2(1)) "CharacterSetSchema"
+        ,	CHARACTER_SET_NAME	"CharacterSetName"
+        ,	0	                  "IsMultiSet"
+        , (CASE WHEN INSTR(UPPER(IN_OUT), 'IN/OUT') != 0 THEN 'INOUT' ELSE IN_OUT END) "Mode"
+        ,	DEFAULT_VALUE   "Default"
+        FROM ALL_ARGUMENTS ar
+        INNER JOIN ALL_PROCEDURES proc ON ar.OBJECT_NAME = proc.PROCEDURE_NAME
+        WHERE PACKAGE_NAME IS NOT NULL AND
+        ar.OBJECT_NAME NOT IN
+        (SELECT OBJECT_NAME FROM ALL_ARGUMENTS WHERE POSITION = 0
+        AND DATA_TYPE IS NOT NULL AND PACKAGE_NAME IS NOT NULL)
+        AND (ar.OVERLOAD IS NULL OR ar.OVERLOAD = '1')
+        AND ar.OWNER NOT IN ('SYS','CTXSYS','SYSTEM','EXFSYS','ORDSYS','XDB','ORDDATA','WMSYS','ORDPLUGINS','MDSYS','OLAPSYS','WKSYS')
+        -->
+      </DefiningQuery>
+    </EntitySet>
+    
+    <EntitySet Name="SConstraints" EntityType="Self.Constraint">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || con.TABLE_NAME || '_' || con.CONSTRAINT_NAME || '''' "Id"
+        , '''' || con.TABLE_NAME || '''' "ParentId"
+        , con.CONSTRAINT_NAME "Name"
+        ,         CASE con.CONSTRAINT_TYPE
+        WHEN 'P' THEN 'PRIMARY KEY'
+        WHEN 'R' THEN 'FOREIGN KEY'
+        WHEN 'U' THEN 'UNIQUE'
+        WHEN 'C' THEN 'CHECK'
+        END "ConstraintType"
+        , CASE con.DEFERRABLE WHEN 'NOT DEFERRABLE' THEN 0 ELSE 1 END "IsDeferrable"
+        , CASE con.DEFERRED WHEN 'IMMEDIATE' THEN 1 ELSE 0 END "IsInitiallyDeferred"
+        FROM
+        USER_CONSTRAINTS con
+        INNER JOIN USER_OBJECTS tab ON con.TABLE_NAME = tab.OBJECT_NAME
+        AND tab.OBJECT_TYPE='TABLE' and con.TABLE_NAME  IS NOT NULL
+        -->
+        SELECT
+        '''' || con.TABLE_NAME || '_' || con.CONSTRAINT_NAME || '''' "Id"
+        , '''' || con.TABLE_NAME || '''' "ParentId"
+        , con.CONSTRAINT_NAME "Name"
+        ,         CASE con.CONSTRAINT_TYPE
+        WHEN 'P' THEN 'PRIMARY KEY'
+        WHEN 'R' THEN 'FOREIGN KEY'
+        WHEN 'U' THEN 'UNIQUE'
+        WHEN 'C' THEN 'CHECK'
+        END "ConstraintType"
+        , CASE con.DEFERRABLE WHEN 'NOT DEFERRABLE' THEN 0 ELSE 1 END "IsDeferrable"
+        , CASE con.DEFERRED WHEN 'IMMEDIATE' THEN 1 ELSE 0 END "IsInitiallyDeferred"
+        FROM ALL_CONSTRAINTS con, ALL_OBJECTS tab
+        WHERE con.TABLE_NAME = tab.OBJECT_NAME
+        AND tab.OBJECT_TYPE='TABLE' and con.TABLE_NAME IS NOT NULL
+        AND tab.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SCheckConstraints" EntityType="Self.CheckConstraint">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || cc.TABLE_NAME || '_' || cc.CONSTRAINT_NAME || '''' "Id"
+        , cc.SEARCH_CONDITION   "Expression"
+        FROM
+        USER_CONSTRAINTS cc
+        WHERE cc.CONSTRAINT_TYPE = 'C'
+        -->
+        SELECT
+        '''' || cc.TABLE_NAME || '_' || cc.CONSTRAINT_NAME || '''' "Id"
+        , cc.SEARCH_CONDITION   "Expression"
+        FROM ALL_CONSTRAINTS cc
+        WHERE cc.CONSTRAINT_TYPE = 'C'
+        AND cc.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SConstraintColumns" EntityType="Self.ConstraintColumn">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+            '''' || col.TABLE_NAME || '_' || col.CONSTRAINT_NAME || ''''  "ConstraintId"
+          , '''' || col.TABLE_NAME || '_' || col.COLUMN_NAME || ''''      "ColumnId"
+        FROM USER_CONS_COLUMNS col
+        -->
+        SELECT
+        '''' || col.TABLE_NAME || '_' || col.CONSTRAINT_NAME || ''''  "ConstraintId"
+        , '''' || col.TABLE_NAME || '_' || col.COLUMN_NAME || ''''    "ColumnId"
+        FROM ALL_CONS_COLUMNS col
+        WHERE col.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SForeignKeyConstraints" EntityType="Self.ForeignKeyConstraint">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+            '''' || TABLE_NAME || '_' || CONSTRAINT_NAME || ''''  "Id"
+          , 'NO ACTION' "UpdateRule"
+          , DELETE_RULE "DeleteRule"
+        FROM
+        USER_CONSTRAINTS
+        WHERE
+          CONSTRAINT_TYPE = 'R'
+        -->
+        SELECT
+        '''' || TABLE_NAME || '_' || CONSTRAINT_NAME || ''''  "Id"
+        , 'NO ACTION' "UpdateRule"
+        , DELETE_RULE "DeleteRule"
+        FROM ALL_CONSTRAINTS
+        WHERE CONSTRAINT_TYPE = 'R'
+        AND OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+  
+    <EntitySet Name="SForeignKeys" EntityType="Self.ForeignKey">
+      <DefiningQuery>
+        <!-- MS OracleClient sample code
+        SELECT
+        '''' || FK.TABLE_NAME || '_' || FK.CONSTRAINT_NAME || '_' || CAST(FK.POSITION as varchar2(30)) || '''' "Id"
+        , '''' || PK.TABLE_NAME || '_' || PK.COLUMN_NAME || ''''      "ToColumnId"
+        , '''' || FK.TABLE_NAME || '_' || FK.COLUMN_NAME || ''''      "FromColumnId"
+        , '''' || FK.TABLE_NAME || '_' || FK.CONSTRAINT_NAME || ''''  "ConstraintId"
+        , FK.POSITION "Ordinal"
+        FROM USER_CONS_COLUMNS FK
+        INNER JOIN USER_CONSTRAINTS FC ON FK.CONSTRAINT_NAME = FC.CONSTRAINT_NAME
+        AND FC.CONSTRAINT_TYPE = 'R'
+        INNER JOIN USER_CONS_COLUMNS PK ON PK.CONSTRAINT_NAME = FC.R_CONSTRAINT_NAME
+        -->
+        SELECT
+        '''' || FK.TABLE_NAME || '_' || FK.CONSTRAINT_NAME || '_' || CAST(FK.POSITION as varchar2(30)) || '''' "Id"
+        , '''' || PK.TABLE_NAME || '_' || PK.COLUMN_NAME || ''''      "ToColumnId"
+        , '''' || FK.TABLE_NAME || '_' || FK.COLUMN_NAME || ''''      "FromColumnId"
+        , '''' || FK.TABLE_NAME || '_' || FK.CONSTRAINT_NAME || ''''  "ConstraintId"
+        , FK.POSITION "Ordinal"
+        FROM ALL_CONS_COLUMNS FK, ALL_CONSTRAINTS FC, ALL_CONS_COLUMNS PK
+        WHERE FK.CONSTRAINT_NAME = FC.CONSTRAINT_NAME AND FC.CONSTRAINT_TYPE = 'R'
+        AND PK.CONSTRAINT_NAME = FC.R_CONSTRAINT_NAME AND
+        PK.POSITION = FK.POSITION AND
+        PK.OWNER IN (SYS_CONTEXT('USERENV', 'CURRENT_USER'))
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SViewConstraints" EntityType="Self.ViewConstraint">
+      <DefiningQuery>
+        SELECT
+        CAST(NULL as varchar2(1))     "Id"
+        , CAST(NULL as varchar2(256)) "ParentId"
+        , CAST(NULL as varchar2(256)) "Name"
+        , CAST(NULL as varchar2(256)) "ConstraintType"
+        , 0 "IsDeferrable"
+        , 0 "IsInitiallyDeferred"
+        , CAST(NULL as varchar2(11))  "Expression"
+        , 'NO ACTION'  "UpdateRule"
+        , 'NO ACTION'  "DeleteRule"
+        FROM DUAL
+        WHERE 1=2
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SViewConstraintColumns" EntityType="Self.ConstraintColumn">
+      <DefiningQuery>
+        SELECT
+          CAST(NULL as varchar2(1))      "ConstraintId"
+        , CAST(NULL as varchar2(1))      "ColumnId"
+        FROM DUAL
+        WHERE 1=2
+      </DefiningQuery>
+    </EntitySet>
+
+    <EntitySet Name="SViewForeignKeys" EntityType="Self.ForeignKey">
+      <DefiningQuery>
+        SELECT
+        CAST(NULL as varchar2(1))    "Id"
+        ,  CAST(NULL as varchar2(1)) "ToColumnId"
+        ,  CAST(NULL as varchar2(1)) "FromColumnId"
+        ,  CAST(NULL as varchar2(1)) "ConstraintId"
+        ,  0 "Ordinal"
+        FROM DUAL
+        WHERE 1=2
+      </DefiningQuery>
+    </EntitySet>
+
+    <AssociationSet Name="STableTableColumns" Association="Self.TableTableColumn" >
+      <End Role="Parent" EntitySet="STables"/>
+      <End Role="Column" EntitySet="STableColumns"/>
+    </AssociationSet>
+    <AssociationSet Name="STableConstraints" Association="Self.TableTableConstraint" >
+      <End Role="Parent" EntitySet="STables"/>
+      <End Role="Constraint" EntitySet="SConstraints"/>
+    </AssociationSet>
+    <AssociationSet Name="SConstraintConstraintColumns" Association="Self.ConstraintConstraintColumn" >
+      <End Role="ConstraintColumn" EntitySet="SConstraintColumns"/>
+      <End Role="Constraint" EntitySet="SConstraints"/>
+    </AssociationSet>    
+    <AssociationSet Name="SConstraintForeignKeys" Association="Self.ConstraintForeignKey" >
+      <End Role="ForeignKey" EntitySet="SForeignKeys"/>
+      <End Role="Constraint" EntitySet="SForeignKeyConstraints"/>
+    </AssociationSet>
+    <AssociationSet Name="SFromForeignKeyColumns" Association="Self.FromForeignKeyColumn" >
+      <End Role="ForeignKey" EntitySet="SForeignKeys"/>
+      <End Role="Column" EntitySet="STableColumns"/>
+    </AssociationSet>
+    <AssociationSet Name="SToForeignKeyColumns" Association="Self.ToForeignKeyColumn" >
+      <End Role="ForeignKey" EntitySet="SForeignKeys"/>
+      <End Role="Column" EntitySet="STableColumns"/>
+    </AssociationSet>
+
+    <AssociationSet Name="SViewViewColumns" Association="Self.ViewViewColumn" >
+      <End Role="Parent" EntitySet="SViews"/>
+      <End Role="Column" EntitySet="SViewColumns"/>
+    </AssociationSet>
+    <AssociationSet Name="SViewViewConstraints" Association="Self.ViewViewConstraint" >
+      <End Role="Parent" EntitySet="SViews"/>
+      <End Role="Constraint" EntitySet="SViewConstraints"/>
+    </AssociationSet>
+    <AssociationSet Name="SViewConstraintConstraintColumns" Association="Self.ViewConstraintConstraintColumn" >
+      <End Role="ConstraintColumn" EntitySet="SViewConstraintColumns"/>
+      <End Role="Constraint" EntitySet="SViewConstraints"/>
+    </AssociationSet>
+    <AssociationSet Name="SViewConstraintForeignKeys" Association="Self.ViewConstraintForeignKey" >
+      <End Role="ForeignKey" EntitySet="SViewForeignKeys"/>
+      <End Role="Constraint" EntitySet="SViewConstraints"/>
+    </AssociationSet>
+    <AssociationSet Name="SFromForeignKeyViewColumns" Association="Self.FromForeignKeyViewColumn" >
+      <End Role="ForeignKey" EntitySet="SViewForeignKeys"/>
+      <End Role="Column" EntitySet="SViewColumns"/>
+    </AssociationSet>
+    <AssociationSet Name="SToForeignKeyViewColumns" Association="Self.ToForeignKeyViewColumn" >
+      <End Role="ForeignKey" EntitySet="SViewForeignKeys"/>
+      <End Role="Column" EntitySet="SViewColumns"/>
+    </AssociationSet>
+
+    <AssociationSet Name="FunctionFunctionParameters" Association="Self.FunctionFunctionParameter">
+      <End Role="Function" EntitySet="SFunctions"/>
+      <End Role="Parameter" EntitySet="SFunctionParameters"/>
+    </AssociationSet>
+    <AssociationSet Name="ProcedureProcedureParameters" Association="Self.ProcedureProcedureParameter" >
+      <End Role="Procedure" EntitySet="SProcedures"/>
+      <End Role="Parameter" EntitySet="SProcedureParameters"/>
+    </AssociationSet>
+
+  </EntityContainer>
+
+  <EntityType Name="Table">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="CatalogName" Type="varchar2" MaxLength="256" />
+    <Property Name="SchemaName" Type="varchar2" MaxLength="256" />
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256" />
+  </EntityType>
+
+  <EntityType Name="TableColumn" >
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2"/>
+    <Property Name="ParentId" Nullable="false" Type="varchar2"/>
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256"/>
+    <Property Name="Ordinal" Nullable="false" Type="int" />
+    <Property Name="IsNullable" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="TypeName" Nullable="false" Type="varchar2" MaxLength="256" />
+    <Property Name="MaxLength" Type="int" />
+    <Property Name="Precision" Type="int" />
+    <Property Name="DateTimePrecision" Type="int" />
+    <Property Name="Scale" Type="int" />
+    <Property Name="CollationCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationName" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetName" Type="varchar2" MaxLength="128" />
+    <Property Name="IsMultiSet" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsIdentity" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsStoreGenerated" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="Default" Nullable="true" Type="varchar2"/>
+  </EntityType>
+
+  <EntityType Name="View">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="CatalogName" Type="varchar2" MaxLength="256" />
+    <Property Name="SchemaName" Type="varchar2" MaxLength="256" />
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256" />
+    <Property Name="ViewDefinition" Nullable="true" Type="varchar2" />
+    <Property Name="IsUpdatable" Nullable="false" Type="odp_internal_use_type" />
+  </EntityType>
+
+  <EntityType Name="ViewColumn">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2"/>
+    <Property Name="ParentId" Nullable="false" Type="varchar2"/>
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256"/>
+    <Property Name="Ordinal" Nullable="false" Type="int" />
+    <Property Name="IsNullable" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="TypeName" Nullable="false" Type="varchar2" MaxLength="256" />
+    <Property Name="MaxLength" Type="int" />
+    <Property Name="Precision" Type="int" />
+    <Property Name="DateTimePrecision" Type="int" />
+    <Property Name="Scale" Type="int" />
+    <Property Name="CollationCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationName" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetName" Type="varchar2" MaxLength="128" />
+    <Property Name="IsMultiSet" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsIdentity" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsStoreGenerated" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="Default" Nullable="true" Type="varchar2"/>
+  </EntityType>
+  
+  <EntityType Name="Function">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2"/>
+    <Property Name="CatalogName" Type="varchar2" MaxLength="256"/>
+    <Property Name="SchemaName" Type="varchar2" MaxLength="256"/>
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256"/>
+    <Property Name="ReturnTypeName" Type="varchar2" MaxLength="256" />
+    <Property Name="ReturnMaxLength" Type="int" />
+    <Property Name="ReturnPrecision" Type="int" />
+    <Property Name="ReturnDateTimePrecision" Type="int" />
+    <Property Name="ReturnScale" Type="int" />
+    <Property Name="ReturnCollationCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnCollationSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnCollationName" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnCharacterSetCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnCharacterSetSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnCharacterSetName" Type="varchar2" MaxLength="128" />
+    <Property Name="ReturnIsMultiSet" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsAggregate" Type="odp_internal_use_type" />
+    <Property Name="IsBuiltIn" Type="odp_internal_use_type" />
+    <Property Name="IsNiladic" Type="odp_internal_use_type" />
+  </EntityType>
+
+  <EntityType Name="Procedure">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2"/>
+    <Property Name="CatalogName" Type="varchar2" MaxLength="256"/>
+    <Property Name="SchemaName" Type="varchar2" MaxLength="256"/>
+    <Property Name="Name" Nullable="false" Type="varchar2" MaxLength="256"/>
+  </EntityType>
+
+  <EntityType Name="Parameter">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2"/>
+    <Property Name="ParentId" Nullable="false" Type="varchar2"/>
+    <Property Name="Name" Nullable="false" Type="varchar2" />
+    <Property Name="Ordinal" Nullable="false" Type="int"/>
+    <Property Name="TypeName" Nullable="false" Type="varchar2" MaxLength="256" />
+    <Property Name="MaxLength" Nullable="true" Type="int" />
+    <Property Name="Precision" Nullable="true" Type="int" />
+    <Property Name="DateTimePrecision" Type="int" />
+    <Property Name="Scale" Nullable="true" Type="int" />
+    <Property Name="CollationCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CollationName" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetCatalog" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetSchema" Type="varchar2" MaxLength="128" />
+    <Property Name="CharacterSetName" Type="varchar2" MaxLength="128" />
+    <Property Name="IsMultiSet" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="Mode" Type="varchar2" MaxLength="16" />
+    <Property Name="Default" Type="varchar2" />
+  </EntityType>
+
+  <EntityType Name="Constraint">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="ParentId" Nullable="false" Type="varchar2" />
+    <Property Name="Name" Nullable="false" MaxLength="256" Type="varchar2" />
+    <Property Name="IsDeferrable" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsInitiallyDeferred" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="ConstraintType" Nullable="false" MaxLength="11" Type="varchar2" />
+  </EntityType>
+
+  <EntityType Name="CheckConstraint">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="Expression" Nullable="true" MaxLength="4000" Type="varchar2" />
+  </EntityType>
+  
+  <EntityType Name="ConstraintColumn">
+    <Key>
+      <PropertyRef Name="ConstraintId" />
+      <PropertyRef Name="ColumnId" />
+    </Key>
+    <Property Name="ConstraintId" Nullable="false" Type="varchar2" />
+    <Property Name="ColumnId" Nullable="false" Type="varchar2" />
+  </EntityType>
+
+  <EntityType Name="ForeignKeyConstraint">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="UpdateRule" Nullable="false" MaxLength="11" Type="varchar2" />
+    <Property Name="DeleteRule" Nullable="false" MaxLength="11" Type="varchar2" />
+  </EntityType>
+
+  <EntityType Name="ForeignKey">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="Ordinal" Nullable="false" Type="int" />
+    <Property Name="ConstraintId" Nullable="false" Type="varchar2" />
+    <Property Name="FromColumnId" Nullable="false" Type="varchar2" />
+    <Property Name="ToColumnId" Nullable="false" Type="varchar2" />
+  </EntityType>
+
+  <EntityType Name="ViewConstraint">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Nullable="false" Type="varchar2" />
+    <Property Name="ParentId" Nullable="false" Type="varchar2" />
+    <Property Name="Name" Nullable="false" MaxLength="256" Type="varchar2" />
+    <Property Name="IsDeferrable" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="IsInitiallyDeferred" Nullable="false" Type="odp_internal_use_type" />
+    <Property Name="ConstraintType" Nullable="false" MaxLength="11" Type="varchar2" />
+    <Property Name="Expression" Nullable="true" MaxLength="4000" Type="varchar2" />
+    <Property Name="UpdateRule" Nullable="true" MaxLength="11" Type="varchar2" />
+    <Property Name="DeleteRule" Nullable="true" MaxLength="11" Type="varchar2" />
+  </EntityType>
+
+  <Association Name="TableTableConstraint">
+    <End Type="Self.Table" Role="Parent" Multiplicity="1" />
+    <End Type="Self.Constraint" Role="Constraint" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Parent">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Constraint">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ConstraintConstraintColumn">
+    <End Type="Self.Constraint" Role="Constraint" Multiplicity="1" />
+    <End Type="Self.ConstraintColumn" Role="ConstraintColumn" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Constraint">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ConstraintColumn">
+        <PropertyRef Name="ConstraintId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ConstraintForeignKey">
+    <End Type="Self.ForeignKeyConstraint" Role="Constraint" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Constraint">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="ConstraintId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="FromForeignKeyColumn">
+    <End Type="Self.TableColumn" Role="Column" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Column">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="FromColumnId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ToForeignKeyColumn">
+    <End Type="Self.TableColumn" Role="Column" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Column">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="ToColumnId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="TableTableColumn">
+    <End Type="Self.Table" Role="Parent" Multiplicity="1" />
+    <End Type="Self.TableColumn" Role="Column" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Parent">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Column">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ViewViewColumn">
+    <End Type="Self.View" Role="Parent" Multiplicity="1" />
+    <End Type="Self.ViewColumn" Role="Column" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Parent">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Column">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="FunctionFunctionParameter">
+    <End Type="Self.Function" Role="Function" Multiplicity="1" />
+    <End Type="Self.Parameter" Role="Parameter" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Function">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Parameter">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ProcedureProcedureParameter">
+    <End Type="Self.Procedure" Role="Procedure" Multiplicity="1" />
+    <End Type="Self.Parameter" Role="Parameter" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Procedure">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Parameter">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ViewViewConstraint">
+    <End Type="Self.View" Role="Parent" Multiplicity="1" />
+    <End Type="Self.ViewConstraint" Role="Constraint" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Parent">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Constraint">
+        <PropertyRef Name="ParentId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ViewConstraintConstraintColumn">
+    <End Type="Self.ViewConstraint" Role="Constraint" Multiplicity="1" />
+    <End Type="Self.ConstraintColumn" Role="ConstraintColumn" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Constraint">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ConstraintColumn">
+        <PropertyRef Name="ConstraintId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ViewConstraintForeignKey">
+    <End Type="Self.ViewConstraint" Role="Constraint" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Constraint">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="ConstraintId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="FromForeignKeyViewColumn">
+    <End Type="Self.ViewColumn" Role="Column" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Column">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="FromColumnId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+  <Association Name="ToForeignKeyViewColumn">
+    <End Type="Self.ViewColumn" Role="Column" Multiplicity="1" />
+    <End Type="Self.ForeignKey" Role="ForeignKey" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Column">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ForeignKey">
+        <PropertyRef Name="ToColumnId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+
+</Schema>

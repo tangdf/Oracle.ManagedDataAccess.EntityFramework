@@ -1,0 +1,12 @@
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\Oracle.ManagedDataAccess.EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\Oracle.ManagedDataAccess.EntityFramework.pdb
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\Oracle.ManagedDataAccess.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\EntityFramework.xml
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\bin\Release\zh-Hans\EntityFramework.resources.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.Properties.Resources.resources
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csproj.GenerateResource.Cache
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csproj.CoreCompileInputs.cache
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.dll
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.pdb
+G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csprojResolveAssemblyReference.cache
