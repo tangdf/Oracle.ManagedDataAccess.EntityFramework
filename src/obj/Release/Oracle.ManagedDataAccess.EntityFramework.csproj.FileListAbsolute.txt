@@ -10,3 +10,15 @@ G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.Enti
 G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.dll
 G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.pdb
 G:\source\Oracle.ManagedDataAccess.EntityFramework\Oracle.ManagedDataAccess.EntityFramework\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csprojResolveAssemblyReference.cache
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\Oracle.ManagedDataAccess.EntityFramework.dll
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\Oracle.ManagedDataAccess.EntityFramework.pdb
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\EntityFramework.dll
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\Oracle.ManagedDataAccess.dll
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\EntityFramework.xml
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\bin\Release\zh-Hans\EntityFramework.resources.dll
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csprojResolveAssemblyReference.cache
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.Properties.Resources.resources
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csproj.GenerateResource.Cache
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.csproj.CoreCompileInputs.cache
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.dll
+H:\SourceTree\tangdf\Oracle.ManagedDataAccess.EntityFramework\src\obj\Release\Oracle.ManagedDataAccess.EntityFramework.pdb
